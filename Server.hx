@@ -13,6 +13,7 @@
 // para trabalhar com parsagem
 import haxe.Json;
 
+
 enum State{
     CONNECT;
     SELECT;
@@ -23,15 +24,15 @@ enum State{
 class Player {
     var _name:String;
 	var _character:String;
-	var x:int;
-	var y:int;
+	var x:Int;
+	var y:Int;
 
     public function new (name:String) {
         _name = name;
     }
 
-	public function GetX():int { return x; }
-	public function GetY():int { return y; }
+	public function GetX():Int { return x; }
+	public function GetY():Int { return y; }
 
 	public function Name():String {
 		return _name;
@@ -53,7 +54,7 @@ class Server {
 		// usa o método BIND para começar
 		// a escuta na porta e IPs
 		// especificados no parâmetro
-		var host = "127.0.0.1";
+		var host = "192.168.1.9";
 		var port = 5000;
 
 		s.bind(new sys.net.Host(host), port);
@@ -62,6 +63,8 @@ class Server {
 //      $host:$port'
         trace("Starting server at ...");
 
+		while (true) {
+			th
         var _minhaconexao: sys.net.Socket = s.accept();
 
         trace("Client connected");
@@ -78,7 +81,6 @@ class Server {
         }
 
         while(true) {
-
 			switch (_state) {
 				case CONNECT:
 					var data:String = '{"player": "' + curPlayer.Name() + '", "status": "OK"}';
@@ -92,20 +94,19 @@ class Server {
 					var selectObject:Dynamic = Json.parse(data);
 
 					trace("received:", selectObject.character);
-					curPlayer.SetCharacter(selectObject.character);
+					curPlayer.setCharacter(selectObject.character);
 					_state = SYNC;
 
 				case SYNC:
+					trace("waiting for sync");
+					var data:String = _minhaconexao.input.readLine();
 
+					var selectObject:Dynamic = Json.parse(data);
+
+					trace("received:", selectObject.character);
+					otherPlayer.setCharacter(selectObject.character);
+					_state = PLAY;
 				case PLAY:
-					var otherPlayer:Player = null;
-
-					if(curPlayer.Name() == "player1") {
-						otherPlayer = _player2;
-					} else {
-						otherPlayer = _player1;
-					}
-
 					try {
 						_minhaconexao.write("{\"x\": " + otherPlayer.GetX() + ", \"y\": " + otherPlayer.GetY() + "}\n");
 					} catch(msg:String) {
@@ -115,6 +116,7 @@ class Server {
 
             Sys.sleep(4);
 
+		}
 		}
     }
 }
