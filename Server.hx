@@ -23,10 +23,15 @@ enum State{
 class Player {
     var _name:String;
 	var _character:String;
+	var x:int;
+	var y:int;
 
     public function new (name:String) {
         _name = name;
     }
+
+	public function GetX():int { return x; }
+	public function GetY():int { return y; }
 
 	public function Name():String {
 		return _name;
@@ -69,12 +74,12 @@ class Server {
             curPlayer = _player1;
         } else {
             _player2 = new Player("player2");
-            curPlayer = _player2;
+			curPlayer = _player2;
         }
 
         while(true) {
 
-            switch (_state) {
+			switch (_state) {
 				case CONNECT:
 					var data:String = '{"player": "' + curPlayer.Name() + '", "status": "OK"}';
 
@@ -91,8 +96,22 @@ class Server {
 					_state = SYNC;
 
 				case SYNC:
+
 				case PLAY:
-            }
+					var otherPlayer:Player = null;
+
+					if(curPlayer.Name() == "player1") {
+						otherPlayer = _player2;
+					} else {
+						otherPlayer = _player1;
+					}
+
+					try {
+						_minhaconexao.write("{\"x\": " + otherPlayer.GetX() + ", \"y\": " + otherPlayer.GetY() + "}\n");
+					} catch(msg:String) {
+						trace("Error", msg);
+					}
+			}
 
             Sys.sleep(4);
 
